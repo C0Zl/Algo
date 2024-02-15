@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.StringTokenizer;
 
 public class Main {
@@ -40,7 +42,8 @@ public class Main {
 			for (int i = 0; i < M; i++) {
 				for (int j = 0; j < N; j++) {
 					if (arr[i][j] && !visited[i][j]) {
-						cnt += dfs(i, j);
+						bfs(i, j);
+						cnt++;
 					}
 				}
 			}
@@ -49,18 +52,35 @@ public class Main {
 		System.out.println(sb);
 	}
 	
-	static int dfs(int r, int c) {
+	static void bfs(int r, int c) {
+		Queue<Node> queue = new LinkedList<>();
+		queue.add(new Node(r, c));
 		visited[r][c] = true;
 		
-		for (int d = 0; d < 4; d++) {
-			nr = r + dr[d];
-			nc = c + dc[d];
+		while(!queue.isEmpty()) {
+			Node cur = queue.poll();
 			
-			if (nr >= 0 && nr < M && nc >= 0 && nc < N) {
-				if (arr[nr][nc] && !visited[nr][nc]) 
-					dfs(nr, nc);
+			for (int d = 0; d < 4; d++) {
+				nr = cur.r + dr[d];
+				nc = cur.c + dc[d];
+				
+				if (nr >= 0 && nr < M && nc >= 0 && nc < N) {
+					if (arr[nr][nc] && !visited[nr][nc])  {
+						queue.add(new Node(nr, nc));
+						visited[nr][nc] = true;
+					}
+				}
 			}
 		}
-		return 1;
+	}
+	
+	static class Node {
+		int r;
+		int c;
+		
+		Node(int r, int c) {
+			this.r = r;
+			this.c = c;
+		}
 	}
 }
