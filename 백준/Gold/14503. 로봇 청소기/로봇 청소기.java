@@ -36,18 +36,19 @@ public class Main {
 			}
 		}
 		
+		// 청소 시작
 		clean(r, c, dir);
 		System.out.println(cnt);
 	}
 	
-	static void clean(int r, int c, int dir) {
+	public static void clean(int r, int c, int dir) {
+		// 청소가 되지 않았다면 ?
 		if (arr[r][c] == 0) {
-			// 청소가 되지 않았다면 ?
 			arr[r][c] = -1;
 			cnt++;
-//			System.out.println("[" + cnt + "] r : " + r + ", c : " + c + ", d : " + dir);
 		}
 		
+		// 이미 반시계로 회전해서 사방 탐색 시작 
 		for (int d = dir + 1; d <= dir + 4; d++) {
 			int nr = r + dr[d % 4];
 			int nc = c + dc[d % 4];
@@ -55,20 +56,24 @@ public class Main {
 			if (nr < 0 || nr >= N || nc < 0 || nc >= M || arr[nr][nc] == 1) continue;
 			if (arr[nr][nc] == 0) {
 				clean(nr, nc, d);
-				// break;는 왜 안됨
+				// break;는 왜 안됨 ???
 				return;
 			}
 		}
+		
+		// 사방 탐색 결과 청소 안된 구역이 없으면 후진
+		back(r, c, dir);
+	}
+	
+	private static void back(int r, int c, int dir) {
 		int d = (dir + 2) % 4;
 		int nr = r + dr[d];
 		int nc = c + dc[d];
 		if(arr[nr][nc] == 1) {
 			return;
 		} else {
-			
 			clean(nr, nc, dir);
 		}
-		
 	}
 	
 }
