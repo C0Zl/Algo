@@ -1,117 +1,112 @@
-const fs = require("fs");
-const input = fs.readFileSync("/dev/stdin").toString().trim().split("\n");
-
-class PriorityQueue {
-  constructor(comparator) {
-    this.heap = [null]; // 1번 인덱스부터 사용
-    this.size = 0;
-    this.comparator = comparator;
+class MinHeap {
+  constructor() {
+    this.heap = [];
   }
 
-  push(item) {
-    this.size++;
-    this.heap[this.size] = item;
-    this.percolateUp();
+  insert(edge, value) {
+    const node = { edge, value };
+    this.heap.push(node);
+    this.upHeap();
   }
 
-  percolateUp() {
-    let pos = this.size;
-    const heap = this.heap;
-    const item = heap[pos];
-    const comparator = this.comparator;
+  upHeap() {
+    let heap = this.heap;
+    let idx = heap.length - 1;
+    const node = heap[idx];
 
-    while (pos > 1) {
-      const parentPos = Math.floor(pos / 2);
-      if (comparator(item, heap[parentPos]) >= 0) break;
-      heap[pos] = heap[parentPos]; // 부모를 아래로 이동
-      pos = parentPos;
+    while (idx > 0) {
+      let parentIdx = Math.floor((idx - 1) / 2);
+
+      if (heap[parentIdx].value <= node.value) break;
+
+      heap[idx] = heap[parentIdx];
+      idx = parentIdx;
     }
 
-    heap[pos] = item;
+    heap[idx] = node;
   }
 
-  shift() {
-    if (this.size === 0) return undefined; // 예외 처리
+  remove() {
+    const heap = this.heap;
 
-    const min = this.heap[1]; // 최소값 저장
-    this.heap[1] = this.heap[this.size]; // 마지막 요소를 루트로 이동
-    this.heap.pop(); // 마지막 요소 제거
-    this.size--;
+    if (heap.length === 0) return undefined;
+    if (heap.length === 1) return heap.pop();
 
-    this.percolateDown();
+    const min = heap[0];
+    heap[0] = heap.pop();
+    this.downHeap(0);
+
     return min;
   }
 
-  percolateDown() {
-    let pos = 1;
-    const heap = this.heap;
-    const item = heap[pos];
-    const comparator = this.comparator;
+  downHeap(idx) {
+    let heap = this.heap;
+    let length = heap.length;
+    const node = heap[idx];
 
-    while (pos * 2 <= this.size) {
-      let leftChild = pos * 2;
-      let rightChild = pos * 2 + 1;
-      let smallerChild = leftChild;
+    while (idx * 2 + 1 < length) {
+      let leftIdx = idx * 2 + 1;
+      let rightIdx = leftIdx + 1;
+      let smallerChildIdx = leftIdx;
 
-      // 오른쪽 자식이 있고, 왼쪽보다 작은 경우 오른쪽 선택
-      if (rightChild <= this.size && comparator(heap[rightChild], heap[leftChild]) < 0) {
-        smallerChild = rightChild;
-      }
+      if (rightIdx < length && heap[rightIdx].value < heap[leftIdx].value)
+        smallerChildIdx = rightIdx;
 
-      if (comparator(item, heap[smallerChild]) <= 0) break; // 힙 조건 충족 시 종료
-      heap[pos] = heap[smallerChild]; // 자식을 부모로 이동
-      pos = smallerChild;
+      if (heap[smallerChildIdx].value >= node.value) break;
+
+      heap[idx] = heap[smallerChildIdx];
+      idx = smallerChildIdx;
     }
 
-    heap[pos] = item;
+    heap[idx] = node;
   }
 
   isEmpty() {
-    return this.size === 0;
+    return this.heap.length === 0;
   }
 }
 
-function dijkstra(graph, start, V) {
-  const INF = Infinity;
-  const distances = new Array(V + 1).fill(INF); // 거리 배열 (무한대로 초기화)
-  distances[start] = 0;
+let fs = require("fs");
+let [[V, E], [K], ...edges] = fs
+  .readFileSync("/dev/stdin", "utf8")
+  .trim()
+  .split("\n")
+  .map((line) => line.trim().split(" ").map(Number));
 
-  const pq = new PriorityQueue((a, b) => a[0] - b[0]); // 최소 힙
-  pq.push([0, start]); // [거리, 노드]
+const INF = Infinity;
+const adjList = Array.from({ length: V }, () => new Map());
+const minValue = Array(V).fill(INF);
 
-  while (!pq.isEmpty()) {
-    const [currentDistance, node] = pq.shift(); // 가장 작은 거리 노드 꺼내기
+// **🚀 중복 간선 처리 (더 작은 가중치만 저장)**
+for (let [u, v, w] of edges) {
+  if (!adjList[u - 1].has(v - 1) || adjList[u - 1].get(v - 1) > w) {
+    adjList[u - 1].set(v - 1, w);
+  }
+}
 
-    if (currentDistance > distances[node]) continue; // 최단 거리보다 크면 무시
+dijkstra(K - 1);
 
-    for (const [nextNode, weight] of graph[node]) {
-      const newDistance = currentDistance + weight;
-      if (newDistance < distances[nextNode]) {
-        distances[nextNode] = newDistance;
-        pq.push([newDistance, nextNode]); // 갱신된 거리 삽입
+function dijkstra(start) {
+  const minHeap = new MinHeap();
+  minHeap.insert(start, 0);
+  minValue[start] = 0;
+
+  while (!minHeap.isEmpty()) {
+    let { edge: node, value: curDistance } = minHeap.remove();
+
+    // 🚀 **힙에서 꺼낸 거리가 현재 최소 거리보다 크면 무시 (중복 경로 방지)**
+    if (curDistance > minValue[node]) continue;
+
+    for (const [nextNode, weight] of adjList[node]) {
+      let newDistance = curDistance + weight;
+
+      if (newDistance < minValue[nextNode]) {
+        minValue[nextNode] = newDistance;
+        minHeap.insert(nextNode, newDistance);
       }
     }
   }
-
-  return distances;
 }
-
-// 입력 파싱
-const [V, E] = input[0].split(" ").map(Number);
-const start = Number(input[1]);
-
-const graph = Array.from({ length: V + 1 }, () => []);
-
-// 그래프 구성 (인접 리스트)
-for (let i = 2; i < 2 + E; i++) {
-  const [u, v, w] = input[i].split(" ").map(Number);
-  graph[u].push([v, w]);
-}
-
-// 다익스트라 실행
-const shortestPaths = dijkstra(graph, start, V);
 
 // 결과 출력
-for (let i = 1; i <= V; i++) {
-  console.log(shortestPaths[i] === Infinity ? "INF" : shortestPaths[i]);
-}
+console.log(minValue.map((v) => (v === INF ? "INF" : v)).join("\n"));
