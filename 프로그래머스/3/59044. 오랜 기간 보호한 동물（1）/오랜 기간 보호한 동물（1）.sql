@@ -1,15 +1,19 @@
 SELECT
-    ai.name AS NAME,
-    ai.datetime AS DATETIME
-FROM
-    animal_ins ai
-LEFT OUTER JOIN
-    animal_outs ao
-ON 
-    ai.animal_id = ao.animal_id
-WHERE
-    ao.animal_id IS NULL
-ORDER BY
-    ai.datetime ASC
-LIMIT 3
-    
+    NAME,
+    DATETIME
+FROM  (
+    SELECT
+        I.NAME,
+        I.DATETIME
+    FROM
+        ANIMAL_INS I
+    LEFT OUTER JOIN
+        ANIMAL_OUTS O
+    ON
+        O.ANIMAL_ID = I.ANIMAL_ID
+    WHERE
+        O.ANIMAL_ID IS NULL
+    ORDER BY
+        DATETIME ASC
+)
+WHERE ROWNUM <= 3
