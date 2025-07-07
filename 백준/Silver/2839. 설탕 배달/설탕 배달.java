@@ -3,12 +3,11 @@ import java.io.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        Scanner sc = new Scanner(System.in);
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         // N 입력
-        int N = sc.nextInt();
-        int n = N;
-        int minCnt = n / 5;
+        int N = Integer.parseInt(br.readLine());
+        int n = N, minCnt = n / 5;
         n %= 5;
 
         while (n > 0) {
