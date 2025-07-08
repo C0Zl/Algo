@@ -4,7 +4,7 @@ import java.io.*;
 public class Main {
     static boolean[][] visited;
     static int[][] map;
-    static int maxValue = 0, n, m;
+    static int maxValue = 0, n, m, maxCeil = 0;
     static int[] dr = {-1, 0, 1, 0};
     static int[] dc = {0, -1, 0, 1};
 
@@ -24,6 +24,7 @@ public class Main {
             st = new StringTokenizer(br.readLine());
             for (int j = 0; j < m; j++) {
                 map[i][j] = Integer.parseInt(st.nextToken());
+                maxCeil = Math.max(maxCeil, map[i][j]);
             }
         }
 
@@ -40,6 +41,9 @@ public class Main {
     }
 
     static void dfs(int count, int sum, int r, int c) {
+        // 남은 칸을 모두 maxCeil로 채워도 maxValue보다 작다면 pass
+        if (sum + maxCeil * (4 - count) <= maxValue) return;
+
         // 기저조건
         if (count == 4) {
             maxValue = Math.max(sum, maxValue);
