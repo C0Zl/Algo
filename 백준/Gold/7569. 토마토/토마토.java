@@ -26,7 +26,7 @@ public class Main {
         int z = Integer.parseInt(st.nextToken());
 
         // 정답을 답을 변수
-        int answer = 0;
+        int answer = 0, unripeCnt = 0;
 
         // 익은 토마토를 넣을 queue
         Queue<Node> ripeQueue = new LinkedList<>();
@@ -46,6 +46,8 @@ public class Main {
                     if (box[h][r][c] == 1) {
                         visited[h][r][c] = true;
                         ripeQueue.offer(new Node(h, r, c, 0));
+                    } else if (box[h][r][c] == 0) {
+                        unripeCnt++;
                     }
                 }
             }
@@ -66,6 +68,7 @@ public class Main {
                         || box[nh][nr][nc] != 0 || visited[nh][nr][nc]) continue;
 
                 // 안익은 토마토인 경우
+                unripeCnt--;
                 box[nh][nr][nc] = 1;
                 visited[nh][nr][nc] = true;
                 ripeQueue.offer(new Node(nh, nr, nc, curTomato.day + 1));
@@ -73,18 +76,6 @@ public class Main {
         }
 
         // 토마토 상자 확인하기
-        for (int h = 0; h < z; h++) {
-            for (int r = 0; r < n; r++) {
-                for (int c = 0; c < m; c++) {
-                    // 안익은 토마토가 있다면 불가능
-                    if (box[h][r][c] == 0) {
-                        System.out.println(-1);
-                        return;
-                    }
-                }
-            }
-        }
-
-        System.out.println(answer);
+        System.out.println(unripeCnt == 0 ? answer : -1);
     }
 }
