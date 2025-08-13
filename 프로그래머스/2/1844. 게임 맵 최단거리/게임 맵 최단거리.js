@@ -10,30 +10,33 @@ function solution(maps) {
     const visited = new Array(n).fill().map(() => Array(m).fill(false));
     
     // BFS 구현을 위한 큐 초기화
-    const queue = [[0, 0, 1]]; // [r, c, 이동 거리]
-    visited[0][0] = true; // 시작점 방문 처리
+    const queue = [{
+        r : 0,
+        c : 0,
+        dist: 1
+    }]; // r, c, 이동거리
+    visited[0][0] = true;
     
-    while (queue.length) {
-        const [r, c, dist] = queue.shift();
+    // queue가 빌 때까지 반복
+    while(queue.length) {
+        const {r, c, dist} = queue.shift();
         
-        // 목적지에 도착하면 바로 반환 (최소 거리)
-        if (r === n - 1 && c === m - 1) {
-            return dist;
-        }
+        // n,m에 도착 시 최단 경로
+        if (r === n - 1 && c === m - 1) return dist;
         
         // 사방 탐색
-        for (let d = 0; d < 4; d++) {
+        for(let d = 0; d < 4; d++) {
             const nr = r + dr[d];
             const nc = c + dc[d];
             
-            // 맵의 범위를 벗어나지 않고, 아직 방문하지 않았으며, 이동 가능한 칸인 경우
-            if (nr >= 0 && nr < n && nc >= 0 && nc < m && !visited[nr][nc] && maps[nr][nc] === 1) {
-                visited[nr][nc] = true; // 방문 처리
-                queue.push([nr, nc, dist + 1]); // 다음 좌표와 거리 정보를 큐에 삽입
-            }
+            // 방문할 수 없는 경우 처리
+            if (nr < 0 || nr >= n || nc < 0 || nc >= m || visited[nr][nc] || !maps[nr][nc]) continue;
+            
+            // 벽이 없으면 queue에 추가
+            queue.push({r: nr, c: nc, dist: dist+1});
+            visited[nr][nc] = true;
         }
     }
     
-    // 목적지에 도착할 수 없는 경우 -1 반환
     return -1;
 }
