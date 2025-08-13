@@ -1,40 +1,43 @@
 function solution(genres, plays) {
-    const genrePlayCount = new Map(); // 장르별 총 재생 수
-    const genreSongs = new Map();    // 장르별 노래 리스트
-
-    // 1. 데이터를 Map에 정리
-    for (let i = 0; i < genres.length; i++) {
-        const genre = genres[i];
-        const play = plays[i];
-
-        // 장르별 총 재생 수 저장
-        genrePlayCount.set(genre, (genrePlayCount.get(genre) || 0) + play);
-
-        // 장르별 노래 리스트 저장
-        if (!genreSongs.has(genre)) {
-            genreSongs.set(genre, []);
-        }
-        genreSongs.get(genre).push({ index: i, play });
+    let answer = [];
+    
+    const n = genres.length;
+    const map = new Map();
+    
+    for (let i = 0; i < n; i++) {
+        const genreCnt = map.get(genres[i]);
+        
+        map.set(genres[i], genreCnt ? genreCnt + plays[i] : plays[i]);
     }
 
-    // 2. 장르를 총 재생 수 기준으로 내림차순 정렬
-    const sortedGenres = [...genrePlayCount.entries()]
-        .sort((a, b) => b[1] - a[1]) // 재생 수 기준 내림차순
-        .map(([genre]) => genre);    // 장르 이름만 추출
-
-    const answer = [];
-
-    // 3. 각 장르에서 최대 2곡 선택
-    for (const genre of sortedGenres) {
-        // 장르 내 노래를 재생 수 기준 내림차순, 고유 번호 오름차순 정렬
-        const songs = genreSongs.get(genre)
-            .sort((a, b) => b.play - a.play || a.index - b.index);
-
-        // 최대 2곡 추가
-        for (let i = 0; i < Math.min(2, songs.length); i++) {
-            answer.push(songs[i].index);
+    let genreArr = [...map].sort((a, b) => b[1] - a[1]);
+    
+    // 장르, index, play를 담은 객체 배열 생성
+    let totalInfo = genres.map((g,i)=>({
+        genre : g,
+        index : i,
+        playCnt : plays[i]
+    }));
+    
+    // totalInfo 정렬
+    totalInfo.sort((a, b) => {
+        // 재생 횟수가 같은 경우
+        if (a.playCnt === b.playCnt) {
+            return a.index - b.index;
         }
+        
+        return b.playCnt - a.playCnt;
+    })
+    
+    for (let genre of genreArr) {
+        let cnt = 0;
+        totalInfo.forEach((info) => {
+            if (info.genre == genre[0] && cnt < 2) {
+                cnt++;
+                answer.push(info.index);
+            }
+        })
     }
-
+    
     return answer;
 }
